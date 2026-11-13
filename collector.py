@@ -62,6 +62,12 @@ with concurrent.futures.ThreadPoolExecutor(max_workers=8) as ex:
   records+=rec
   if err:errors.append(err)
 try:
+ kv=requests.get("https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json",headers=H,timeout=25);kv.raise_for_status()
+ kd=kv.json()
+ for v in kd.get("vulnerabilities",[])[:250]:
+  records.append({"title":"CISA KEV: "+v.get("vulnerabilityName","")+" ("+v.get("cveID","")+")","url":"https://www.cisa.gov/known-exploited-vulnerabilities-catalog","domain":"CISA KEV","source":"CISA KEV","category":"cyber","seendate":v.get("dateAdded"),"snippet":v.get("shortDescription",""),"payload":v,"kind":"kev"})
+except Exception as e:errors.append("CISA KEV "+str(e)[:150])
+try:
  z=requests.get("https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojson",headers=H,timeout=20).json()
  for x in z.get("features",[]):
   p=x.get("properties",{});g=x.get("geometry",{});coords=g.get("coordinates",[])
