@@ -18,6 +18,6 @@ class IntelligenceTests(unittest.TestCase):
     def test_brief_discloses_method_and_caveat(self):
         b=build_brief([{"title":"Nuclear plant security alert","source":"X"}])
         self.assertIn("keyword",b["method"].lower())
-        self.assertIn("not",b["caveat"].lower())
+        self.assertIn("false claims",b["caveat"].lower())
 
 if __name__=="__main__":unittest.main()
