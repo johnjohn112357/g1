@@ -94,7 +94,7 @@ def feeds():
  return jsonify(articles=articles,feeds=[{"id":s["id"],"status":r["status"],"count":len(r["articles"]),"error":r.get("error")} for s,r in zip(selected,results)],retrieved_at=datetime.now(timezone.utc).isoformat())
 @app.get("/api/search")
 def search():
- q=request.args.get("q","conflict OR military OR cyberattack OR sanctions OR terrorism OR infrastructure")
+ q=request.args.get("q","(conflict OR military OR cyberattack OR sanctions OR terrorism OR infrastructure)")
  days=max(1,min(30,int(request.args.get("days","7"))))
  limit=max(10,min(250,int(request.args.get("limit","100"))))
  try:
