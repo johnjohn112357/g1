@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: global-intelligence-watch
+    runtime: python
+    plan: free
+    region: frankfurt
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    healthCheckPath: /api/health
+    autoDeploy: true
+  - type: cron
+    name: giw-collector
+    runtime: python
+    plan: starter
+    region: frankfurt
+    schedule: "*/15 * * * *"
+    buildCommand: pip install -r requirements.txt
+    startCommand: python collector.py
