@@ -48,7 +48,9 @@ def entries(url,name,cat):
 records=[];errors=[]
 q=os.getenv("GIW_QUERY","(conflict OR military OR cyberattack OR sanctions OR terrorism OR infrastructure)")
 try:
- gr=requests.get("https://api.gdeltproject.org/api/v2/doc/doc",params={"query":q,"mode":"ArtList","format":"json","maxrecords":250,"timespan":"24h","sort":"HybridRel"},headers=H,timeout=40)\n gr.raise_for_status()\n d=gr.json()
+ gr=requests.get("https://api.gdeltproject.org/api/v2/doc/doc",params={"query":q,"mode":"ArtList","format":"json","maxrecords":250,"timespan":"24h","sort":"HybridRel"},headers=H,timeout=40)
+ gr.raise_for_status()
+ d=gr.json()
  records += [{**a,"source":"GDELT","category":"news","kind":"gdelt"} for a in d.get("articles",[])]
 except Exception as e:errors.append("GDELT "+str(e)[:150])
 def getfeed(spec):
