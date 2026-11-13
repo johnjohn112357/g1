@@ -127,6 +127,13 @@ def quakes():
  try:
   r=HTTP.get(FEEDS[-1]["url"],timeout=15);r.raise_for_status();return jsonify(r.json())
  except Exception as e:return jsonify(error=str(e)[:180]),502
+@app.get("/api/cyber/kev")
+def cyber_kev():
+ try:
+  r=HTTP.get("https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json",timeout=20);r.raise_for_status();d=r.json()
+  vulns=d.get("vulnerabilities",[])
+  return jsonify(source="CISA Known Exploited Vulnerabilities Catalog",catalog_version=d.get("catalogVersion"),date_released=d.get("dateReleased"),count=len(vulns),vulnerabilities=vulns[:250],note="CISA catalog inclusion means known exploitation; it does not establish exploitation against your systems.")
+ except Exception as e:return jsonify(error=str(e)[:180]),502
 @app.get("/api/events")
 def events():
  c=db()
