@@ -1,0 +1,30 @@
+name: GIW keep-awake and collection check
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: giw-keep-awake
+  cancel-in-progress: true
+jobs:
+  wake:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Wake Render and verify health
+        env:
+          GIW_URL: https://global-intelligence-watch.onrender.com
+        run: |
+          set -eu
+          for attempt in 1 2 3 4 5; do
+            code="$(curl --silent --show-error --max-time 25 -o /tmp/health.json -w '%{http_code}' "$GIW_URL/api/health" || true)"
+            if [ "$code" = "200" ]; then
+              cat /tmp/health.json
+              exit 0
+            fi
+            sleep 12
+          done
+          echo "GIW health check failed after retries"
+          exit 1
