@@ -98,10 +98,10 @@ def search():
  days=max(1,min(30,int(request.args.get("days","7"))))
  limit=max(10,min(250,int(request.args.get("limit","100"))))
  try:
-  cachekey=(q,days,limit);cached=GDELT_CACHE.get(cachekey)
+  gd_q=q if q.strip().startswith("(") else "("+q+")"\n  cachekey=(gd_q,days,limit);cached=GDELT_CACHE.get(cachekey)
   if cached and time.time()-cached[0]<300:data=cached[1]
   else:
-   r=HTTP.get("https://api.gdeltproject.org/api/v2/doc/doc",params={"query":q,"mode":"ArtList","format":"json","maxrecords":limit,"timespan":f"{days}d","sort":"HybridRel"},timeout=30);r.raise_for_status();data=r.json()
+   r=HTTP.get("https://api.gdeltproject.org/api/v2/doc/doc",params={"query":gd_q,"mode":"ArtList","format":"json","maxrecords":limit,"timespan":f"{days}d","sort":"HybridRel"},timeout=30);r.raise_for_status();data=r.json()
    if not isinstance(data,dict):raise ValueError("GDELT returned non-JSON object")
    GDELT_CACHE[cachekey]=(time.time(),data)
   gd=[{**a,"source":"gdelt","category":"news","kind":"gdelt"} for a in data.get("articles",[])]
@@ -111,7 +111,7 @@ def search():
   with concurrent.futures.ThreadPoolExecutor(max_workers=8) as ex:rs=list(ex.map(parse_feed,FEEDS))
   feed=[a for z in rs for a in z["articles"]]
  except Exception:feed=[]
- terms=[x.lower() for x in q.replace(" OR "," ").replace(" AND "," ").split() if len(x)>2 and x.upper() not in ("OR","AND","NOT")]
+ terms=[x.lower().strip("()\\\"") for x in q.replace(" OR "," ").replace(" AND "," ").replace("("," ").replace(")"," ").split() if len(x.strip("()\\\""))>2 and x.upper() not in ("OR","AND","NOT")]
  if terms:feed=[a for a in feed if any(t in (a["title"]+" "+a.get("snippet","")).lower() for t in terms)]
  merged={a.get("url"):a for a in feed+gd if a.get("url")}
  articles=sorted(merged.values(),key=lambda x:x.get("seendate",""),reverse=True)
