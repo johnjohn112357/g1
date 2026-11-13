@@ -16,7 +16,6 @@ FEEDS=[
 ("UN News","https://news.un.org/feed/subscribe/en/news/all/rss.xml","multilateral"),
 ("UN Press / Security Council","https://press.un.org/en/rss.xml","multilateral"),
 ("ECDC","https://www.ecdc.europa.eu/en/taxonomy/term/1307/feed","health"),
-("NATO","https://www.nato.int/cps/en/natohq/news_rss.htm","official"),
 ("EU Council","https://www.consilium.europa.eu/en/rss/pressreleases.ashx/","official"),
 ("UK Government","https://www.gov.uk/search/news-and-communications.atom","official"),
 ("UK NCSC","https://www.ncsc.gov.uk/api/1/services/v1/report-rss-feed.xml","cyber"),
@@ -26,10 +25,7 @@ FEEDS=[
 
 ("WHO","https://www.who.int/rss-feeds/news-english.xml","health"),
 ("IAEA Top News","https://www.iaea.org/feeds/topnews","official"),
-("US State Department","https://www.state.gov/rss-feed/press-releases/feed/","official"),
-("US Department of Defense","https://www.defense.gov/News/RSS/","official"),
 
-("RFE/RL","https://www.rferl.org/api/z-pqpiev-qpp","media"),
 ("Euronews","https://www.euronews.com/rss?level=theme&name=news","media"),
 ("NPR World","https://feeds.npr.org/1004/rss.xml","media"),
 ("Sky News","https://feeds.skynews.com/feeds/rss/world.xml","media"),
@@ -48,13 +44,6 @@ def entries(url,name,cat):
   if title and link:out.append({"title":title,"url":link,"domain":name,"source":name,"category":cat,"seendate":e.get("published",e.get("updated","")),"kind":"feed"})
  return out
 records=[];errors=[]
-q=os.getenv("GIW_QUERY","(conflict OR military OR cyberattack OR sanctions OR terrorism OR infrastructure)")
-try:
- gr=requests.get("https://api.gdeltproject.org/api/v2/doc/doc",params={"query":q,"mode":"ArtList","format":"json","maxrecords":250,"timespan":"24h","sort":"HybridRel"},headers=H,timeout=40)
- gr.raise_for_status()
- d=gr.json()
- records += [{**a,"source":"GDELT","category":"news","kind":"gdelt"} for a in d.get("articles",[])]
-except Exception as e:errors.append("GDELT "+str(e)[:150])
 def getfeed(spec):
  name,url,cat=spec
  try:return entries(url,name,cat),None
