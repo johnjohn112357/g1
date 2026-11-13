@@ -17,8 +17,8 @@ https://global-intelligence-watch.onrender.com
 - Render Blueprint links the existing PostgreSQL connection string into the web service.
 
 ## Included source catalogue
-Media: BBC World/Europe, Guardian World, Deutsche Welle, France 24, Al Jazeera, Euronews, NPR World, Sky News, Radio Free Europe/Radio Liberty, Kyiv Independent.
-Official/multilateral: UN News, NATO, Council of the EU, European External Action Service, European Commission, European Parliament, UK Government.
+Media: BBC World/Europe, Guardian World, Deutsche Welle, France 24, Al Jazeera, Euronews, NPR World, Sky News, Radio Free Europe/Radio Liberty.
+Official/multilateral: UN News, NATO, Council of the EU, European Commission, UK Government, IAEA, US State Department, US Department of Defense.
 Specialist / investigative: UK NCSC, US CISA, Defense News, Bellingcat.
 Humanitarian/health/disaster: WHO, GDACS, USGS earthquake GeoJSON; ReliefWeb is linked manually (API requires approved appname).
 Aggregator: GDELT DOC 2.0 (not itself a primary source).
