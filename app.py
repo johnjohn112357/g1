@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 import psycopg, requests, feedparser
 from flask import Flask, jsonify, request, send_from_directory
 from psycopg.rows import dict_row
-from intelligence import build_brief, cluster_events, classify, theme
+from intelligence import build_brief, build_evidence, cluster_events, classify, theme
 
 app=Flask(__name__,static_folder="static")
 DATABASE_URL=os.getenv("DATABASE_URL")
@@ -136,6 +136,14 @@ def cyber_kev():
   vulns=d.get("vulnerabilities",[])
   return jsonify(source="CISA Known Exploited Vulnerabilities Catalog",catalog_version=d.get("catalogVersion"),date_released=d.get("dateReleased"),count=len(vulns),vulnerabilities=vulns[:250],note="CISA catalog inclusion means known exploitation; it does not establish exploitation against your systems.")
  except Exception as e:return jsonify(error=str(e)[:180]),502
+@app.get("/api/analysis/evidence")
+def analysis_evidence():
+ c=db()
+ if not c:return jsonify(items=[],note="PostgreSQL unavailable"),503
+ with c,cursor() as cur:
+  cur.execute("SELECT id,url,title,source,domain,category,seendate,first_seen,last_seen FROM events ORDER BY last_seen DESC LIMIT 1500")
+  rows=cur.fetchall()
+ return jsonify(build_evidence(rows))
 @app.get("/api/analysis/brief")
 def analysis_brief():
  c=db()
