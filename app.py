@@ -1,6 +1,6 @@
 import os, json, time, hashlib, concurrent.futures, xml.etree.ElementTree as ET, threading, subprocess, sys
 from datetime import datetime, timezone
-import psycopg, requests
+import psycopg, requests, feedparser
 from flask import Flask, jsonify, request, send_from_directory
 from psycopg.rows import dict_row
 
@@ -51,27 +51,18 @@ def init_db():
 def clean_text(x):
  return " ".join((x or "").split())[:2000]
 def parse_feed(src):
- now=time.time(); cached=CACHE.get(src["id"])
+ now=time.time();cached=CACHE.get(src["id"])
  if cached and now-cached[0]<CACHE_TTL:return cached[1]
  try:
-  r=HTTP.get(src["url"],timeout=12);r.raise_for_status()
-  root=ET.fromstring(r.content); items=root.findall(".//item")
-  if not items: items=root.findall(".//{*}entry")
+  r=HTTP.get(src["url"],timeout=15);r.raise_for_status()
+  parsed=feedparser.parse(r.content)
+  if parsed.bozo and not parsed.entries:raise ValueError(str(parsed.bozo_exception)[:150])
   out=[]
-  for it in items[:50]:
-   def tag(name):
-    el=it.find(name) or it.find("{*}"+name)
-    return clean_text(el.text if el is not None else "")
-   title=tag("title");link=tag("link")
-   if not link:
-    el=it.find("{*}link")
-    if el is not None:link=el.attrib.get("href","")
-   desc=tag("description") or tag("summary")
-   date=tag("pubDate") or tag("updated") or tag("published")
-   if title and link:out.append({"title":title,"url":link,"domain":src["name"],"source":src["id"],"category":src["type"],"region":src["region"],"seendate":date,"snippet":desc[:500],"kind":"feed"})
-  result={"status":"ok","articles":out,"checked":datetime.now(timezone.utc).isoformat()}
- except Exception as e:
-  result={"status":"error","articles":[],"error":str(e)[:180],"checked":datetime.now(timezone.utc).isoformat()}
+  for e in parsed.entries[:50]:
+   title=clean_text(e.get("title",""));link=e.get("link","")
+   if title and link:out.append({"title":title,"url":link,"domain":src["name"],"source":src["id"],"category":src["type"],"region":src["region"],"seendate":e.get("published",e.get("updated","")),"snippet":clean_text(e.get("summary",""))[:500],"kind":"feed"})
+  result={"status":"ok","articles":out,"checked":datetime.now(timezone.utc).isoformat(),"warning":str(parsed.bozo_exception)[:120] if parsed.bozo else None}
+ except Exception as e:result={"status":"error","articles":[],"error":str(e)[:180],"checked":datetime.now(timezone.utc).isoformat()}
  CACHE[src["id"]]=(now,result);return result
 @app.get("/")
 def home():return send_from_directory("static","index.html")
