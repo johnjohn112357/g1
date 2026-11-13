@@ -98,7 +98,8 @@ def search():
  days=max(1,min(30,int(request.args.get("days","7"))))
  limit=max(10,min(250,int(request.args.get("limit","100"))))
  try:
-  gd_q=q if q.strip().startswith("(") else "("+q+")"\n  cachekey=(gd_q,days,limit);cached=GDELT_CACHE.get(cachekey)
+  gd_q=q if q.strip().startswith("(") else "("+q+")"
+  cachekey=(gd_q,days,limit);cached=GDELT_CACHE.get(cachekey)
   if cached and time.time()-cached[0]<300:data=cached[1]
   else:
    r=HTTP.get("https://api.gdeltproject.org/api/v2/doc/doc",params={"query":gd_q,"mode":"ArtList","format":"json","maxrecords":limit,"timespan":f"{days}d","sort":"HybridRel"},timeout=30);r.raise_for_status();data=r.json()
