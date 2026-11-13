@@ -1,0 +1,35 @@
+name: GIW scheduled intelligence collection
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: giw-collector
+  cancel-in-progress: false
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install collector dependencies
+        run: pip install -r requirements.txt
+      - name: Validate external database secret
+        env:
+          GIW_DATABASE_URL: ${{ secrets.GIW_DATABASE_URL }}
+        run: |
+          if [ -z "$GIW_DATABASE_URL" ]; then
+            echo "::error::Add GIW_DATABASE_URL in GitHub Actions repository secrets (Neon PostgreSQL connection string)."
+            exit 1
+          fi
+      - name: Collect and persist public-source records
+        env:
+          GIW_DATABASE_URL: ${{ secrets.GIW_DATABASE_URL }}
+          DATABASE_URL: ${{ secrets.GIW_DATABASE_URL }}
+        run: python collector.py
