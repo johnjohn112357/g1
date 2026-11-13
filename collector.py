@@ -35,7 +35,8 @@ FEEDS=[
 def entries(url,name,cat):
  r=requests.get(url,headers=H,timeout=20);r.raise_for_status()
  f=feedparser.parse(r.content)
- if f.bozo and not f.entries:raise ValueError(str(f.bozo_exception)[:150])\n if not f.entries:raise ValueError("Feed returned no entries; possibly blocked or HTML")
+ if f.bozo and not f.entries:raise ValueError(str(f.bozo_exception)[:150])
+ if not f.entries:raise ValueError("Feed returned no entries; possibly blocked or HTML")
  out=[]
  for e in f.entries[:50]:
   title=(e.get("title") or "").strip();link=e.get("link","")
