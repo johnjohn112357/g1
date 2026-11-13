@@ -47,6 +47,15 @@ python app.py
 python collector.py
 ```
 
+## Incident Intelligence v2 (candidate grouping)
+
+- Analyst page: `/incidents`; APIs: `/api/incidents` and `/api/incidents/<incident_id>`.
+- Deterministic title-token grouping (minimum overlap ratio 0.72; 14-day anchor window) creates candidate IDs anchored to the earliest archived event ID.
+- Candidate groups and report links persist in `giw_incidents` and `giw_incident_reports`; API reads refresh group assignments from the latest 1,500 archived reports.
+- Each candidate includes a report timeline, publisher-label count and explicit evidence caveat.
+- **Not verified event identity:** similar headlines may refer to different events. Publisher count is not independent corroboration; syndication/shared sourcing is not resolved automatically. Analyst review remains required.
+- Greedy heuristic grouping can change with archive ordering or a newly earliest report; IDs are application keys, not guaranteed permanent incident identifiers.
+
 ## Analytic integrity / limitations
 - A headline/article is not proof that an event happened.
 - Official statements can be authoritative about what an institution said, but not automatically independent verification of its claims.
