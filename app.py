@@ -35,7 +35,7 @@ FEEDS=[
  {"id":"kyiv-independent","name":"The Kyiv Independent","url":"https://kyivindependent.com/feed/","type":"media","region":"Ukraine"},
  {"id":"defensenews","name":"Defense News","url":"https://www.defensenews.com/arc/outboundfeeds/rss/","type":"specialist","region":"Global"},
  {"id":"bellingcat","name":"Bellingcat","url":"https://www.bellingcat.com/feed/","type":"investigative","region":"Global"},
- {"id":"gdacs","name":"GDACS Disasters","url":"https://www.gdacs.org/xml/rss.xml","type":"hazard","region":"Global"},,
+ {"id":"gdacs","name":"GDACS Disasters","url":"https://www.gdacs.org/xml/rss.xml","type":"hazard","region":"Global"},
  {"id":"usgs","name":"USGS Earthquakes (GeoJSON)","url":"https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojson","type":"hazard","region":"Global"}
 ]
 def db():
