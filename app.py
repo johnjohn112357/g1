@@ -6,7 +6,7 @@ from psycopg.rows import dict_row
 from intelligence import build_brief, build_evidence, cluster_events, classify, theme
 
 app=Flask(__name__,static_folder="static")
-DATABASE_URL=os.getenv("DATABASE_URL")
+DATABASE_URL=os.getenv("GIW_DATABASE_URL") or os.getenv("DATABASE_URL")
 HTTP=requests.Session()
 HTTP.headers.update({"User-Agent":"GlobalIntelligenceWatch/1.0 (public-source research dashboard)"})
 CACHE={}
@@ -221,6 +221,6 @@ def background_collection():
    print("GIW background collector:",(p.stdout or p.stderr)[-1800:])
   except Exception as e:print("GIW background collector error:",str(e)[:300])
   time.sleep(interval)
-if DATABASE_URL and os.getenv("GIW_BACKGROUND_COLLECTOR","true").lower() in ("1","true","yes"):
+if DATABASE_URL and os.getenv("GIW_BACKGROUND_COLLECTOR","false").lower() in ("1","true","yes"):
  threading.Thread(target=background_collection,name="giw-collector",daemon=True).start()
 if __name__=="__main__":app.run(host="0.0.0.0",port=int(os.getenv("PORT",10000)))
