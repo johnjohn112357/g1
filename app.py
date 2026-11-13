@@ -120,7 +120,7 @@ def events():
 def history(event_id):
  c=db()
  if not c:return jsonify(history=[],note="Database not connected")
- with c,cursor() as cur:
+ with c,c.cursor() as cur:
   cur.execute("SELECT observed_at,payload FROM event_revisions WHERE event_id=%s ORDER BY observed_at DESC LIMIT 100",(event_id,))
   return jsonify(history=cur.fetchall())
 if DATABASE_URL:
