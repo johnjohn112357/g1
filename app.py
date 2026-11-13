@@ -1,4 +1,4 @@
-import os, json, time, hashlib, concurrent.futures, xml.etree.ElementTree as ET
+import os, json, time, hashlib, concurrent.futures, xml.etree.ElementTree as ET, threading, subprocess, sys
 from datetime import datetime, timezone
 import psycopg, requests
 from flask import Flask, jsonify, request, send_from_directory
@@ -139,4 +139,16 @@ def history(event_id):
 if DATABASE_URL:
  try:init_db()
  except Exception as e:print("DB init failed:",str(e)[:200])
+# No extra paid worker: collect periodically while the free web instance is awake.
+def background_collection():
+ interval=max(300,int(os.getenv("GIW_COLLECT_INTERVAL_SECONDS","900")))
+ time.sleep(10)
+ while True:
+  try:
+   p=subprocess.run([sys.executable,"collector.py"],capture_output=True,text=True,timeout=480)
+   print("GIW background collector:",(p.stdout or p.stderr)[-1800:])
+  except Exception as e:print("GIW background collector error:",str(e)[:300])
+  time.sleep(interval)
+if DATABASE_URL and os.getenv("GIW_BACKGROUND_COLLECTOR","true").lower() in ("1","true","yes"):
+ threading.Thread(target=background_collection,name="giw-collector",daemon=True).start()
 if __name__=="__main__":app.run(host="0.0.0.0",port=int(os.getenv("PORT",10000)))
