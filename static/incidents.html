@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>GIW · Incident Intelligence</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1020;--panel:#121a2b;--line:#27334a;--muted:#9eacc4;--text:#e8eef8;--accent:#72b7ff}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 system-ui,Segoe UI,sans-serif}
+header{padding:22px max(20px,calc((100vw - 1180px)/2));border-bottom:1px solid var(--line);background:#0d1425}
+header a{color:var(--accent);text-decoration:none}main{max-width:1180px;margin:24px auto;padding:0 18px}
+h1{margin:8px 0;font-size:28px}h2{font-size:19px;margin:0 0 10px}.muted{color:var(--muted)}.notice{border:1px solid #66532a;background:#261f13;color:#f3d69b;padding:12px;border-radius:8px;margin:14px 0}
+.layout{display:grid;grid-template-columns:minmax(280px,390px) 1fr;gap:16px}.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;min-width:0}
+#list{display:flex;flex-direction:column;gap:8px}.item{border:1px solid var(--line);background:#101729;padding:12px;border-radius:8px;text-align:left;color:inherit;cursor:pointer}.item:hover,.item.active{border-color:var(--accent)}.item strong{display:block;margin-bottom:6px}.count{font-size:12px;color:var(--muted)}.tag{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:2px 8px;font-size:12px;color:var(--muted);margin:2px}
+.timeline{list-style:none;padding:0;margin:12px 0}.timeline li{border-left:2px solid #405a7c;padding:0 0 16px 14px;margin-left:5px}.timeline time{font-size:12px;color:var(--muted)}.timeline a{color:var(--accent)}.empty{padding:20px;color:var(--muted)}
+@media(max-width:800px){.layout{grid-template-columns:1fr}}
+</style></head><body>
+<header><a href="/">← Global Intelligence Watch</a><h1>Incident Intelligence</h1><div class="muted">Candidate incident groupings · evidence-linked reporting timeline</div></header>
+<main><div class="notice"><strong>Analytical limitation:</strong> Groups are generated from title-token similarity and a 14-day window. Similar headlines can describe different events. Publisher counts are not independent corroboration; syndicated or shared-source reports may inflate them. Review source links before treating a group as one incident.</div>
+<div class="layout"><section class="panel"><h2>Candidate incidents</h2><p id="status" class="muted">Loading archive…</p><div id="list"></div></section>
+<section class="panel"><h2 id="detail-title">Select a candidate</h2><div id="detail" class="muted">Choose an incident to inspect its reports and timeline.</div></section></div>
+</main>
+<script>
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const list=document.querySelector("#list"),status=document.querySelector("#status"),detail=document.querySelector("#detail");
+async function show(id){document.querySelectorAll(".item").forEach(x=>x.classList.toggle("active",x.dataset.id===id));detail.innerHTML="Loading…";
+try{const r=await fetch("/api/incidents/"+encodeURIComponent(id));const d=await r.json();if(!r.ok)throw Error(d.error||r.status);document.querySelector("#detail-title").textContent=d.incident.headline;
+detail.innerHTML='<div><span class="tag">'+d.incident.report_count+' reports</span><span class="tag">'+d.incident.publisher_count+' publisher labels</span></div><p class="muted">'+esc(d.evidence_note)+'</p><ol class="timeline">'+d.timeline.map(x=>'<li><time>'+esc(x.seendate||x.last_seen||"Date unknown")+'</time><br><a target="_blank" rel="noopener noreferrer" href="'+esc(x.url)+'">'+esc(x.title)+'</a><div class="muted">'+esc(x.domain||x.source||"Unknown publisher")+'</div></li>').join("")+'</ol>';
+}catch(e){detail.textContent="Unable to load incident: "+e.message}}
+async function load(){try{const r=await fetch("/api/incidents");const d=await r.json();if(!r.ok)throw Error(d.error||r.status);status.textContent=d.groups_detected+" candidate groups from "+d.source_reports+" archived reports (similarity heuristic)";
+if(!d.incidents.length){list.innerHTML='<div class="empty">No candidate groups yet. Collection may need to populate the archive.</div>';return}
+list.innerHTML=d.incidents.map(x=>'<button class="item" data-id="'+esc(x.id)+'"><strong>'+esc(x.headline)+'</strong><span class="count">'+x.report_count+' reports · '+x.publisher_count+' publisher labels</span></button>').join("");
+list.querySelectorAll(".item").forEach(b=>b.addEventListener("click",()=>show(b.dataset.id)));show(d.incidents[0].id);
+}catch(e){status.textContent="Incident API unavailable: "+e.message;list.innerHTML='<div class="empty">Check PostgreSQL connection and application logs.</div>'}}
+load();
+</script></body></html>
