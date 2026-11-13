@@ -65,3 +65,9 @@ python collector.py
 - [CISA](https://www.cisa.gov/news.xml)
 - [EU Council RSS](https://www.consilium.europa.eu/en/about-site/rss/)
 - [UK Emergency Alerts](https://www.gov.uk/alerts) — actual life-threatening public warnings; GIW is not a replacement.
+
+### New continuous collection / analysis features
+- `.github/workflows/keep-awake.yml` pings the Render health endpoint every 10 minutes on GitHub Actions. It is best-effort keep-awake support for the free web service, not an uptime SLA; GitHub scheduled jobs can be delayed or dropped, and the collector only runs while the Render process is alive.
+- Evidence review (`/api/analysis/evidence`) assembles similar headline reports, source labels, and timestamp spread. It does **not** establish independent corroboration: syndication and shared wire copy can inflate source counts.
+- AI analysis (`/api/analysis/ai`) is optional and off until an owner adds `OPENAI_API_KEY` as a Render secret. It summarizes up to 100 archived headlines using the OpenAI Responses API, includes source URLs in the prompt, and explicitly labels output preliminary. It does not browse the web or verify facts. Model is configurable with `GIW_AI_MODEL` (default `gpt-6-luna`). API usage is billed separately; no key is stored in Git.
+- Map locations are headline keyword-to-gazetteer matches and approximate country/capital coordinates—not geocoded event coordinates. Ambiguous or absent place names can be misplaced or unmapped.
