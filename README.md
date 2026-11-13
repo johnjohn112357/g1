@@ -12,7 +12,7 @@ https://global-intelligence-watch.onrender.com
 - Leaflet world map: explicitly approximate title-keyword regions for news (not incident geolocation) and exact reported coordinates for USGS earthquake features.
 - USGS real-time GeoJSON earthquake feed and event links.
 - Flask JSON endpoints: `/api/health`, `/api/search`, `/api/feeds`, `/api/sources`, `/api/hazards/earthquakes`, `/api/events`, `/api/history/<id>`.
-- PostgreSQL schema for event deduplication, first/last seen and event revision snapshots.
+- PostgreSQL schema for event deduplication, first/last seen and event revision snapshots.\n- Transparent headline triage, heuristic priority leads, title-similarity clusters and archive-based brief (`/api/analysis/brief`, `/api/analysis/triage`, `/api/analysis/clusters`).\n- CISA Known Exploited Vulnerabilities catalogue on demand (`/api/cyber/kev`) and persistent CVE snapshots in the collector.\n- Browser-opt-in notifications for newly observed archived high/critical keyword leads (only while the dashboard is open).\n- Region filters (Europe, UK, Middle East, Indo-Pacific, Africa, Americas) over title-keyword matches.
 - Collector script (`python collector.py`) and a no-cost background polling thread: snapshots sources about every 15 minutes while the Render web instance is awake.
 - Render Blueprint links the existing PostgreSQL connection string into the web service.
 
@@ -50,7 +50,7 @@ python collector.py
 - Syndication/duplicate articles are not independent corroboration.
 - News map regions are inferred from title keywords and may be false positives; never use as precise coordinates.
 - No universal crawl: APIs, RSS/Atom, public accessibility, licensing, language coverage, robots/terms, paywalls, rate limits and provider outages constrain coverage. Do not scrape restricted services or bypass access controls.
-- No automatic confidence scoring or AI-generated conclusions are presented as established facts. Human source checking remains required.
+- The brief, triage and clustering are transparent deterministic heuristics—not AI intelligence, validated risk scores, event confirmation or forecasting. Region assignment is title-keyword filtering and can be wrong. Notifications require the page to remain open; they are not push infrastructure or emergency warnings. CISA KEV inclusion means a CVE is known exploited in the wild somewhere, not that a local asset is affected. Tests cover analysis helper behavior, not provider availability or operational uptime. Human source checking remains required.
 - Not classified intelligence, professional security advice, or a substitute for official emergency instructions.
 
 ## Source references / documentation
