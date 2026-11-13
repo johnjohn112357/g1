@@ -60,3 +60,20 @@ def build_brief(events):
             highlights.append({"title":title,"source":e.get("source") or e.get("domain"),"url":e.get("url"),"level":c["heuristic_level"],"terms":c["matched_terms"],"seendate":e.get("seendate")})
     highlights=highlights[:20]
     return {"generated_at":now.isoformat(),"sample_size":len(events),"method":"Transparent keyword-based triage of stored headlines; not AI analysis, verified facts, or a forecast.","headline":"Stored reporting is concentrated in "+(", ".join(f"{k} ({v})" for k,v in themes.most_common(3)) or "general coverage")+".","category_counts":dict(counts),"heuristic_counts":dict(levels),"theme_counts":dict(themes),"priority_leads":highlights,"caveat":"Keyword matches are triage signals only. Headlines can omit context, contain false claims, or use terms metaphorically. Check primary documents and independent reporting."}
+
+def build_evidence(events):
+    """Evidence review index: source diversity and time spread, not truth scoring."""
+    clusters=cluster_events(events)
+    out=[]
+    for c in clusters:
+        items=c["items"]
+        domains=sorted({str(x.get("domain") or x.get("source") or "unknown").lower() for x in items})
+        dates=[]
+        for x in items:
+            raw=x.get("seendate") or x.get("last_seen") or x.get("first_seen")
+            if raw:
+                try: dates.append(datetime.fromisoformat(str(raw).replace("Z","+00:00")))
+                except Exception: pass
+        spread=(max(dates)-min(dates)).total_seconds()/3600 if len(dates)>1 else 0
+        out.append({"headline":c["label"],"reports":len(items),"distinct_source_labels":len(domains),"source_labels":domains[:12],"time_spread_hours":round(spread,1),"priority":classify(c["label"])["heuristic_level"],"matched_terms":classify(c["label"])["matched_terms"],"report_links":[{"title":x.get("title"),"source":x.get("source") or x.get("domain"),"url":x.get("url"),"date":x.get("seendate") or x.get("last_seen")} for x in items[:8]],"assessment":"Multiple stored reports with similar headline wording; source independence and factual corroboration have not been verified."})
+    return {"generated_at":datetime.now(timezone.utc).isoformat(),"method":"Title similarity + distinct source labels + reported timestamp spread. No claim verification, source-independence audit, or truth probability.","items":out[:30],"caveat":"Syndicated stories can appear under different outlets; source labels are not proof of independent corroboration. Open source documents and compare facts."}
