@@ -136,6 +136,24 @@ def cyber_kev():
   vulns=d.get("vulnerabilities",[])
   return jsonify(source="CISA Known Exploited Vulnerabilities Catalog",catalog_version=d.get("catalogVersion"),date_released=d.get("dateReleased"),count=len(vulns),vulnerabilities=vulns[:250],note="CISA catalog inclusion means known exploitation; it does not establish exploitation against your systems.")
  except Exception as e:return jsonify(error=str(e)[:180]),502
+@app.get("/api/analysis/ai")
+def analysis_ai():
+ key=os.getenv("OPENAI_API_KEY")
+ if not key:return jsonify(error="AI analysis is not configured. Add OPENAI_API_KEY in Render environment variables; API usage is billed separately."),503
+ c=db()
+ if not c:return jsonify(error="PostgreSQL unavailable"),503
+ with c,cursor() as cur:
+  cur.execute("SELECT id,url,title,source,domain,category,seendate,last_seen FROM events ORDER BY last_seen DESC LIMIT 100")
+  rows=cur.fetchall()
+ if not rows:return jsonify(error="No archived reports available"),404
+ evidence=[{"title":x.get("title"),"source":x.get("source") or x.get("domain"),"url":x.get("url"),"date":x.get("seendate") or x.get("last_seen")} for x in rows]
+ prompt=("You are an OSINT analyst. Analyze ONLY the provided collected headlines/metadata, not external facts. Separate: OBSERVED REPORTING (what headlines say), ASSESSMENT (tentative synthesis), ALTERNATIVE EXPLANATIONS, INFORMATION GAPS, INDICATORS TO WATCH, and CONFIDENCE (low/medium/high with reason). Never assert a headline is true; don't infer casualties, intent, capability, or causation absent evidence. Identify duplicates/syndication and source limitations. Cite every observed item inline using its exact source label and URL from the input. Do not invent citations. State explicitly this is a headline-only preliminary assessment.\n\nDATA:\n"+json.dumps(evidence,ensure_ascii=False)
+ try:
+  rr=HTTP.post("https://api.openai.com/v1/responses",headers={"Authorization":"Bearer "+key,"Content-Type":"application/json"},json={"model":os.getenv("GIW_AI_MODEL","gpt-6-luna"),"input":prompt,"max_output_tokens":1800},timeout=90);rr.raise_for_status();d=rr.json()
+  textout="\n".join(z.get("text","") for item in d.get("output",[]) for z in item.get("content",[]) if z.get("type")=="output_text")
+  if not textout:return jsonify(error="AI response contained no text",response_id=d.get("id")),502
+  return jsonify(analysis=textout,model=d.get("model"),response_id=d.get("id"),input_items=len(evidence),generated_at=datetime.now(timezone.utc).isoformat(),method="LLM synthesis of stored headlines only; not live research or fact verification.",warning="Not verified intelligence. Follow source URLs and independently corroborate before acting.")
+ except Exception as e:return jsonify(error="AI request failed: "+str(e)[:250]),502
 @app.get("/api/analysis/evidence")
 def analysis_evidence():
  c=db()
