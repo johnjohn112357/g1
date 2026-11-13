@@ -8,11 +8,14 @@ services:
     startCommand: gunicorn app:app
     healthCheckPath: /api/health
     autoDeploy: true
-  - type: cron
-    name: giw-collector
-    runtime: python
-    plan: starter
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: giw-intelligence-db
+          property: connectionString
+databases:
+  - name: giw-intelligence-db
+    plan: free
     region: frankfurt
-    schedule: "*/15 * * * *"
-    buildCommand: pip install -r requirements.txt
-    startCommand: python collector.py
+    databaseName: giw_intelligence_db
+    user: giw_intelligence_db_user
