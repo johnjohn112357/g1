@@ -22,7 +22,6 @@ FEEDS=[
  {"id":"un-news","name":"UN News","url":"https://news.un.org/feed/subscribe/en/news/all/rss.xml","type":"multilateral","region":"Global"},
  {"id":"un-press","name":"UN Press / Security Council","url":"https://press.un.org/en/rss.xml","type":"multilateral","region":"Global"},
  {"id":"ecdc","name":"European Centre for Disease Prevention and Control","url":"https://www.ecdc.europa.eu/en/taxonomy/term/1307/feed","type":"health","region":"Europe"},
- {"id":"nato","name":"NATO News","url":"https://www.nato.int/cps/en/natohq/news_rss.htm","type":"official","region":"Global"},
  {"id":"eu-council","name":"Council of the EU","url":"https://www.consilium.europa.eu/en/rss/pressreleases.ashx/","type":"official","region":"Europe"},
  {"id":"uk-gov","name":"UK Government","url":"https://www.gov.uk/search/news-and-communications.atom","type":"official","region":"UK"},
  {"id":"uk-ncsc","name":"UK NCSC","url":"https://www.ncsc.gov.uk/api/1/services/v1/report-rss-feed.xml","type":"cyber","region":"UK"},
@@ -32,10 +31,7 @@ FEEDS=[
 
  {"id":"who","name":"WHO News","url":"https://www.who.int/rss-feeds/news-english.xml","type":"health","region":"Global"},
  {"id":"iaea","name":"IAEA Top News","url":"https://www.iaea.org/feeds/topnews","type":"official","region":"Global"},
- {"id":"us-state","name":"US State Department","url":"https://www.state.gov/rss-feed/press-releases/feed/","type":"official","region":"US"},
- {"id":"us-dod","name":"US Department of Defense","url":"https://www.defense.gov/News/RSS/","type":"official","region":"US"},
 
- {"id":"rferl","name":"Radio Free Europe/Radio Liberty","url":"https://www.rferl.org/api/z-pqpiev-qpp","type":"media","region":"Global"},
  {"id":"euronews","name":"Euronews","url":"https://www.euronews.com/rss?level=theme&name=news","type":"media","region":"Europe"},
  {"id":"npr-world","name":"NPR World","url":"https://feeds.npr.org/1004/rss.xml","type":"media","region":"Global"},
  {"id":"sky","name":"Sky News","url":"https://feeds.skynews.com/feeds/rss/world.xml","type":"media","region":"Global"},
@@ -88,7 +84,7 @@ def sources():
  for s in FEEDS:
   c=CACHE.get(s["id"])
   statuses.append({**s,"last_checked":datetime.fromtimestamp(c[0],timezone.utc).isoformat() if c else None,"status":c[1]["status"] if c else "not_checked","items":len(c[1]["articles"]) if c else None,"error":c[1].get("error") if c else None})
- statuses.insert(0,{"id":"reliefweb","name":"ReliefWeb","url":"https://reliefweb.int/updates","type":"humanitarian","region":"Global","status":"manual_link","description":"Humanitarian source; API ingestion requires approved appname."})
+ statuses.insert(0,{"id":"nato-manual","name":"NATO News","url":"https://www.nato.int/cps/en/natohq/news.htm","type":"official","region":"Global","status":"manual_link","description":"NATO official news; feed endpoint unavailable from Render."})\n statuses.insert(1,{"id":"us-state-manual","name":"US State Department","url":"https://www.state.gov/press-releases/","type":"official","region":"US","status":"manual_link","description":"Official page; RSS fetch is blocked (403) from this host."})\n statuses.insert(2,{"id":"us-dod-manual","name":"US Department of Defense","url":"https://www.defense.gov/News/","type":"official","region":"US","status":"manual_link","description":"Official page; RSS fetch is blocked (403) from this host."})\n statuses.insert(3,{"id":"rferl-manual","name":"Radio Free Europe/Radio Liberty","url":"https://www.rferl.org/","type":"media","region":"Global","status":"manual_link","description":"Manual source; feed returned no parseable entries."})\n statuses.insert(4,{"id":"reliefweb","name":"ReliefWeb","url":"https://reliefweb.int/updates","type":"humanitarian","region":"Global","status":"manual_link","description":"Humanitarian source; API ingestion requires approved appname."})
  statuses.insert(1,{"id":"gdelt","name":"GDELT DOC 2.0","url":"https://api.gdeltproject.org/api/v2/doc/doc","type":"aggregator","region":"Global","status":"on_demand","description":"Global multilingual news index; not a primary source"})
  statuses.insert(2,{"id":"usgs-live","name":"USGS earthquake GeoJSON","url":"https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojson","type":"hazard","region":"Global","status":"on_demand"})
  return jsonify(sources=statuses,source_count=len(statuses),note="Source availability is tested on fetch; this is a curated starter catalogue, not every online source.")
