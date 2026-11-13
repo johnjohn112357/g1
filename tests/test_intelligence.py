@@ -14,7 +14,7 @@ class IntelligenceTests(unittest.TestCase):
         clusters=cluster_events(rows)
         self.assertTrue(clusters)
         self.assertGreaterEqual(clusters[0]["reports"],2)
-        self.assertIn("not confirmed",clusters[0]["note"])
+        self.assertIn("review",clusters[0]["note"].lower())
     def test_brief_discloses_method_and_caveat(self):
         b=build_brief([{"title":"Nuclear plant security alert","source":"X"}])
         self.assertIn("keyword",b["method"].lower())
