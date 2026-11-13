@@ -144,7 +144,7 @@ def analysis_ai():
  if not key:return jsonify(error="AI analysis is not configured. Add OPENAI_API_KEY in Render environment variables; API usage is billed separately."),503
  c=db()
  if not c:return jsonify(error="PostgreSQL unavailable"),503
- with c,cursor() as cur:
+ with c,c.cursor() as cur:
   cur.execute("SELECT id,url,title,source,domain,category,seendate,last_seen FROM events ORDER BY last_seen DESC LIMIT 100")
   rows=cur.fetchall()
  if not rows:return jsonify(error="No archived reports available"),404
@@ -163,7 +163,7 @@ DATA:
 def analysis_evidence():
  c=db()
  if not c:return jsonify(items=[],note="PostgreSQL unavailable"),503
- with c,cursor() as cur:
+ with c,c.cursor() as cur:
   cur.execute("SELECT id,url,title,source,domain,category,seendate,first_seen,last_seen FROM events ORDER BY last_seen DESC LIMIT 1500")
   rows=cur.fetchall()
  return jsonify(build_evidence(rows))
@@ -171,7 +171,7 @@ def analysis_evidence():
 def analysis_brief():
  c=db()
  if not c:return jsonify(error="PostgreSQL unavailable; brief requires archive."),503
- with c,cursor() as cur:
+ with c,c.cursor() as cur:
   cur.execute("SELECT id,url,title,source,domain,category,seendate,first_seen,last_seen FROM events ORDER BY last_seen DESC LIMIT 1500")
   rows=cur.fetchall()
  return jsonify(build_brief(rows))
@@ -179,7 +179,7 @@ def analysis_brief():
 def analysis_clusters():
  c=db()
  if not c:return jsonify(clusters=[],note="PostgreSQL unavailable"),503
- with c,cursor() as cur:
+ with c,c.cursor() as cur:
   cur.execute("SELECT id,url,title,source,domain,category,seendate,last_seen FROM events ORDER BY last_seen DESC LIMIT 1500")
   rows=cur.fetchall()
  return jsonify(clusters=cluster_events(rows),method="Title similarity only; review before treating as one incident.")
@@ -188,7 +188,7 @@ def analysis_triage():
  c=db()
  if not c:return jsonify(events=[],note="PostgreSQL unavailable"),503
  level=request.args.get("level","high").lower()
- with c,cursor() as cur:
+ with c,c.cursor() as cur:
   cur.execute("SELECT id,url,title,source,domain,category,seendate,last_seen FROM events ORDER BY last_seen DESC LIMIT 1500")
   rows=cur.fetchall()
  out=[]
@@ -228,7 +228,7 @@ def incident_list():
 def incident_detail(incident_id):
  c=db()
  if not c:return jsonify(error="PostgreSQL unavailable"),503
- with c,cursor() as cur:
+ with c,c.cursor() as cur:
   cur.execute("SELECT id,url,title,domain,source,category,seendate,first_seen,last_seen FROM events ORDER BY last_seen DESC LIMIT 1500")
   reports=cur.fetchall()
   rebuild_incidents(c,reports)
