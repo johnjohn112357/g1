@@ -80,7 +80,7 @@ with psycopg.connect(DB) as c:
   for a in records:
    url=a.get("url");title=a.get("title")
    if not url or not title:continue
-   cur.execute("""INSERT INTO events(url,title,domain,source,category,language,sourcecountry,seendate,latitude,longitude,payload)
+   cur.execute("SELECT id,payload FROM events WHERE url=%s",(url,));existing=cur.fetchone()\n   cur.execute("""INSERT INTO events(url,title,domain,source,category,language,sourcecountry,seendate,latitude,longitude,payload)
     VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
     ON CONFLICT(url) DO UPDATE SET title=excluded.title,domain=excluded.domain,source=excluded.source,category=excluded.category,language=excluded.language,sourcecountry=excluded.sourcecountry,seendate=excluded.seendate,latitude=excluded.latitude,longitude=excluded.longitude,last_seen=now(),payload=excluded.payload RETURNING id""",
     (url,title,a.get("domain"),a.get("source"),a.get("category"),a.get("language"),a.get("sourcecountry"),a.get("seendate"),a.get("latitude"),a.get("longitude"),Jsonb(a)))
