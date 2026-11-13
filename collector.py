@@ -1,5 +1,5 @@
 """GIW periodic collector. Requires DATABASE_URL; snapshots source records and revisions."""
-import os,requests,xml.etree.ElementTree as ET,hashlib,concurrent.futures
+import os,requests,feedparser,hashlib,concurrent.futures
 from datetime import datetime,timezone
 import psycopg
 from psycopg.types.json import Jsonb
@@ -33,16 +33,13 @@ FEEDS=[
 ("Bellingcat","https://www.bellingcat.com/feed/","investigative"),
 ("GDACS","https://www.gdacs.org/xml/rss.xml","hazard"),]
 def entries(url,name,cat):
- out=[];root=ET.fromstring(requests.get(url,headers=H,timeout=15).content)
- items=root.findall(".//item") or root.findall(".//{*}entry")
- for it in items[:50]:
-  def val(tag):
-   el=it.find(tag) or it.find("{*}"+tag);return (el.text or "").strip() if el is not None else ""
-  link=val("link")
-  if not link:
-   el=it.find("{*}link");link=el.attrib.get("href","") if el is not None else ""
-  title=val("title")
-  if title and link:out.append({"title":title,"url":link,"domain":name,"source":name,"category":cat,"seendate":val("pubDate") or val("updated"),"kind":"feed"})
+ r=requests.get(url,headers=H,timeout=20);r.raise_for_status()
+ f=feedparser.parse(r.content)
+ if f.bozo and not f.entries:raise ValueError(str(f.bozo_exception)[:150])
+ out=[]
+ for e in f.entries[:50]:
+  title=(e.get("title") or "").strip();link=e.get("link","")
+  if title and link:out.append({"title":title,"url":link,"domain":name,"source":name,"category":cat,"seendate":e.get("published",e.get("updated","")),"kind":"feed"})
  return out
 records=[];errors=[]
 q=os.getenv("GIW_QUERY","conflict OR military OR cyberattack OR sanctions OR terrorism OR infrastructure")
