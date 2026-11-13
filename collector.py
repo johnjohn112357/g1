@@ -23,7 +23,7 @@ FEEDS=[
 ("European Commission","https://ec.europa.eu/commission/presscorner/api/rss?language=en","official"),
 ("European Parliament","https://www.europarl.europa.eu/rss/doc/top-stories/en.xml","official"),
 ("WHO","https://www.who.int/rss-feeds/news-english.xml","health"),
-("ReliefWeb","https://reliefweb.int/updates/rss.xml","humanitarian"),
+
 ("RFE/RL","https://www.rferl.org/api/z-pqpiev-qpp","media"),
 ("Euronews","https://www.euronews.com/rss?level=theme&name=news","media"),
 ("NPR World","https://feeds.npr.org/1004/rss.xml","media"),
@@ -42,7 +42,7 @@ def entries(url,name,cat):
   if title and link:out.append({"title":title,"url":link,"domain":name,"source":name,"category":cat,"seendate":e.get("published",e.get("updated","")),"kind":"feed"})
  return out
 records=[];errors=[]
-q=os.getenv("GIW_QUERY","conflict OR military OR cyberattack OR sanctions OR terrorism OR infrastructure")
+q=os.getenv("GIW_QUERY","(conflict OR military OR cyberattack OR sanctions OR terrorism OR infrastructure)")
 try:
  d=requests.get("https://api.gdeltproject.org/api/v2/doc/doc",params={"query":q,"mode":"ArtList","format":"json","maxrecords":250,"timespan":"24h","sort":"HybridRel"},headers=H,timeout=40).json()
  records += [{**a,"source":"GDELT","category":"news","kind":"gdelt"} for a in d.get("articles",[])]
