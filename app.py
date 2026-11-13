@@ -57,7 +57,8 @@ def parse_feed(src):
  try:
   r=HTTP.get(src["url"],timeout=15);r.raise_for_status()
   parsed=feedparser.parse(r.content)
-  if parsed.bozo and not parsed.entries:raise ValueError(str(parsed.bozo_exception)[:150])\n  if not parsed.entries:raise ValueError("Feed returned no entries; possibly blocked or HTML")
+  if parsed.bozo and not parsed.entries:raise ValueError(str(parsed.bozo_exception)[:150])
+  if not parsed.entries:raise ValueError("Feed returned no entries; possibly blocked or HTML")
   out=[]
   for e in parsed.entries[:50]:
    title=clean_text(e.get("title",""));link=e.get("link","")
