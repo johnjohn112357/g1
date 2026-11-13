@@ -71,3 +71,21 @@ python collector.py
 - Evidence review (`/api/analysis/evidence`) assembles similar headline reports, source labels, and timestamp spread. It does **not** establish independent corroboration: syndication and shared wire copy can inflate source counts.
 - AI analysis (`/api/analysis/ai`) is optional and off until an owner adds `OPENAI_API_KEY` as a Render secret. It summarizes up to 100 archived headlines using the OpenAI Responses API, includes source URLs in the prompt, and explicitly labels output preliminary. It does not browse the web or verify facts. Model is configurable with `GIW_AI_MODEL` (default `gpt-6-luna`). API usage is billed separately; no key is stored in Git.
 - Map locations are headline keyword-to-gazetteer matches and approximate country/capital coordinates—not geocoded event coordinates. Ambiguous or absent place names can be misplaced or unmapped.
+
+
+## Independent scheduled collection (GitHub Actions + external PostgreSQL)
+
+The web process is deliberately not the collector. `.github/workflows/collect.yml` runs the collector every 10 minutes and on manual dispatch. It needs a PostgreSQL connection stored as the GitHub Actions repository secret `GIW_DATABASE_URL` (Neon is the recommended provider). The workflow is independent of Render uptime/sleep. GitHub scheduling is best-effort, not real-time.
+
+### Activate external storage
+
+1. Create a PostgreSQL project/database at Neon (Frankfurt is preferable for the existing Render region).
+2. Copy its **pooled** connection string (SSL required) into GitHub: repository **Settings → Secrets and variables → Actions → New repository secret**, name `GIW_DATABASE_URL`. Never commit the connection string.
+3. Open **Actions → GIW scheduled intelligence collection → Run workflow**. The collector creates its schema automatically. Confirm a successful run and event rows before changing the web app.
+4. For historical records, obtain Render Postgres **External Database URL** (do not publish it), set local environment variables `GIW_SOURCE_DATABASE_URL` (Render) and `GIW_DATABASE_URL` (Neon), install `psycopg[binary]`, then run `python scripts/migrate_db.py`. It copies without deleting source data. Review counts before cutover.
+5. Set Render web-service environment variable `GIW_DATABASE_URL` to the same Neon connection string. GIW prefers this variable over legacy `DATABASE_URL`. Redeploy/restart, then check `/api/health`, `/api/events`, evidence, archive and history.
+6. Only after verification, retain or remove the old Render database deliberately. Do not delete it before confirming the new archive and revisions.
+
+The Render collector is disabled (`GIW_BACKGROUND_COLLECTOR=false`); the old Render database remains configured as a fallback until `GIW_DATABASE_URL` is added. The former keep-awake workflow was removed: Render can sleep without interrupting scheduled collection.
+
+**Migration caveat:** this is an operator-run one-time migration; this repository cannot create a Neon account/project or access its credentials. Do not put either database URL in chat, source code, or logs.
