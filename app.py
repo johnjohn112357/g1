@@ -23,6 +23,19 @@ FEEDS=[
  {"id":"uk-gov","name":"UK Government","url":"https://www.gov.uk/government/announcements.atom","type":"official","region":"UK"},
  {"id":"uk-ncsc","name":"UK NCSC","url":"https://www.ncsc.gov.uk/api/1/services/v1/report-rss-feed.xml","type":"cyber","region":"UK"},
  {"id":"cisa","name":"US CISA","url":"https://www.cisa.gov/news.xml","type":"cyber","region":"US"},
+{"id":"eeas","name":"EU External Action Service","url":"https://www.eeas.europa.eu/rss_en.xml","type":"official","region":"Europe"},
+ {"id":"eu-commission","name":"European Commission","url":"https://ec.europa.eu/commission/presscorner/api/rss?language=en","type":"official","region":"Europe"},
+ {"id":"eu-parliament","name":"European Parliament","url":"https://www.europarl.europa.eu/rss/doc/top-stories/en.xml","type":"official","region":"Europe"},
+ {"id":"who","name":"WHO News","url":"https://www.who.int/rss-feeds/news-english.xml","type":"health","region":"Global"},
+ {"id":"reliefweb","name":"ReliefWeb Updates","url":"https://reliefweb.int/updates/rss.xml","type":"humanitarian","region":"Global"},
+ {"id":"rferl","name":"Radio Free Europe/Radio Liberty","url":"https://www.rferl.org/api/z-pqpiev-qpp","type":"media","region":"Global"},
+ {"id":"euronews","name":"Euronews","url":"https://www.euronews.com/rss?level=theme&name=news","type":"media","region":"Europe"},
+ {"id":"npr-world","name":"NPR World","url":"https://feeds.npr.org/1004/rss.xml","type":"media","region":"Global"},
+ {"id":"sky","name":"Sky News","url":"https://feeds.skynews.com/feeds/rss/world.xml","type":"media","region":"Global"},
+ {"id":"kyiv-independent","name":"The Kyiv Independent","url":"https://kyivindependent.com/feed/","type":"media","region":"Ukraine"},
+ {"id":"defensenews","name":"Defense News","url":"https://www.defensenews.com/arc/outboundfeeds/rss/","type":"specialist","region":"Global"},
+ {"id":"bellingcat","name":"Bellingcat","url":"https://www.bellingcat.com/feed/","type":"investigative","region":"Global"},
+ {"id":"gdacs","name":"GDACS Disasters","url":"https://www.gdacs.org/xml/rss.xml","type":"hazard","region":"Global"},,
  {"id":"usgs","name":"USGS Earthquakes (GeoJSON)","url":"https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojson","type":"hazard","region":"Global"}
 ]
 def db():
