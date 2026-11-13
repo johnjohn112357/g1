@@ -28,7 +28,7 @@ FEEDS=[
  {"id":"eu-commission","name":"European Commission","url":"https://ec.europa.eu/commission/presscorner/api/rss?language=en","type":"official","region":"Europe"},
  {"id":"eu-parliament","name":"European Parliament","url":"https://www.europarl.europa.eu/rss/doc/top-stories/en.xml","type":"official","region":"Europe"},
  {"id":"who","name":"WHO News","url":"https://www.who.int/rss-feeds/news-english.xml","type":"health","region":"Global"},
- {"id":"reliefweb","name":"ReliefWeb Updates","url":"https://reliefweb.int/updates/rss.xml","type":"humanitarian","region":"Global"},
+
  {"id":"rferl","name":"Radio Free Europe/Radio Liberty","url":"https://www.rferl.org/api/z-pqpiev-qpp","type":"media","region":"Global"},
  {"id":"euronews","name":"Euronews","url":"https://www.euronews.com/rss?level=theme&name=news","type":"media","region":"Europe"},
  {"id":"npr-world","name":"NPR World","url":"https://feeds.npr.org/1004/rss.xml","type":"media","region":"Global"},
@@ -81,8 +81,8 @@ def sources():
  for s in FEEDS:
   c=CACHE.get(s["id"])
   statuses.append({**s,"last_checked":datetime.fromtimestamp(c[0],timezone.utc).isoformat() if c else None,"status":c[1]["status"] if c else "not_checked","items":len(c[1]["articles"]) if c else None,"error":c[1].get("error") if c else None})
- statuses.insert(0,{"id":"gdelt","name":"GDELT DOC 2.0","url":"https://api.gdeltproject.org/api/v2/doc/doc","type":"aggregator","region":"Global","status":"on_demand","description":"Global multilingual news index; not a primary source"})
- statuses.insert(1,{"id":"usgs-live","name":"USGS earthquake GeoJSON","url":"https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojson","type":"hazard","region":"Global","status":"on_demand"})
+ statuses.insert(0,{"id":"reliefweb","name":"ReliefWeb","url":"https://reliefweb.int/updates","type":"humanitarian","region":"Global","status":"manual_link","description":"Humanitarian source; API ingestion requires approved appname."})\n statuses.insert(1,{"id":"gdelt","name":"GDELT DOC 2.0","url":"https://api.gdeltproject.org/api/v2/doc/doc","type":"aggregator","region":"Global","status":"on_demand","description":"Global multilingual news index; not a primary source"})
+ statuses.insert(2,{"id":"usgs-live","name":"USGS earthquake GeoJSON","url":"https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojson","type":"hazard","region":"Global","status":"on_demand"})
  return jsonify(sources=statuses,source_count=len(statuses),note="Source availability is tested on fetch; this is a curated starter catalogue, not every online source.")
 @app.get("/api/feeds")
 def feeds():
