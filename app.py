@@ -4,6 +4,7 @@ import psycopg, requests, feedparser
 from flask import Flask, jsonify, request, send_from_directory
 from psycopg.rows import dict_row
 from intelligence import build_brief, build_evidence, cluster_events, classify, theme
+from incident_intelligence import ensure_schema as ensure_incident_schema, rebuild as rebuild_incidents
 
 app=Flask(__name__,static_folder="static")
 DATABASE_URL=os.getenv("GIW_DATABASE_URL") or os.getenv("DATABASE_URL")
@@ -51,6 +52,7 @@ def init_db():
   cur.execute("""CREATE TABLE IF NOT EXISTS event_revisions(id BIGSERIAL PRIMARY KEY,event_id BIGINT REFERENCES events(id),observed_at TIMESTAMPTZ DEFAULT now(),payload JSONB NOT NULL)""")
   cur.execute("CREATE INDEX IF NOT EXISTS events_last_seen_idx ON events(last_seen DESC)")
   cur.execute("CREATE INDEX IF NOT EXISTS revisions_event_idx ON event_revisions(event_id,observed_at DESC)")
+  ensure_incident_schema(c)
 def clean_text(x):
  return " ".join((x or "").split())[:2000]
 def parse_feed(src):
@@ -208,6 +210,36 @@ def history(event_id):
  with c,c.cursor() as cur:
   cur.execute("SELECT observed_at,payload FROM event_revisions WHERE event_id=%s ORDER BY observed_at DESC LIMIT 100",(event_id,))
   return jsonify(history=cur.fetchall())
+@app.get("/incidents")
+def incidents_page():
+ return send_from_directory("static","incidents.html")
+@app.get("/api/incidents")
+def incident_list():
+ c=db()
+ if not c:return jsonify(incidents=[],error="PostgreSQL unavailable"),503
+ with c,c.cursor() as cur:
+  cur.execute("SELECT id,url,title,domain,source,category,seendate,first_seen,last_seen FROM events ORDER BY last_seen DESC LIMIT 1500")
+  reports=cur.fetchall()
+  summaries=rebuild_incidents(c,reports)
+  cur.execute("SELECT id,headline,first_reported,last_reported,report_count,publisher_count,evidence_note,method,updated_at FROM giw_incidents ORDER BY last_reported DESC NULLS LAST LIMIT 200")
+  rows=cur.fetchall()
+ return jsonify(incidents=rows,generated_at=datetime.now(timezone.utc).isoformat(),source_reports=len(reports),groups_detected=len(summaries),method="Conservative deterministic title grouping; this is candidate incident discovery, not verified event identity.")
+@app.get("/api/incidents/<incident_id>")
+def incident_detail(incident_id):
+ c=db()
+ if not c:return jsonify(error="PostgreSQL unavailable"),503
+ with c,cursor() as cur:
+  cur.execute("SELECT id,url,title,domain,source,category,seendate,first_seen,last_seen FROM events ORDER BY last_seen DESC LIMIT 1500")
+  reports=cur.fetchall()
+  rebuild_incidents(c,reports)
+  cur.execute("SELECT id,headline,first_reported,last_reported,report_count,publisher_count,evidence_note,method,created_at,updated_at FROM giw_incidents WHERE id=%s",(incident_id,))
+  incident=cur.fetchone()
+  if not incident:return jsonify(error="Incident not found"),404
+  cur.execute("""SELECT e.id,e.url,e.title,e.domain,e.source,e.category,e.seendate,e.first_seen,e.last_seen
+    FROM giw_incident_reports ir JOIN events e ON e.id=ir.event_id
+    WHERE ir.incident_id=%s ORDER BY COALESCE(e.seendate,e.last_seen::text) ASC""",(incident_id,))
+  timeline=cur.fetchall()
+ return jsonify(incident=incident,timeline=timeline,method=incident["method"],evidence_note=incident["evidence_note"])
 if DATABASE_URL:
  try:init_db()
  except Exception as e:print("DB init failed:",str(e)[:200])
