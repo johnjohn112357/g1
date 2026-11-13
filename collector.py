@@ -3,7 +3,7 @@ import os,requests,feedparser,hashlib,concurrent.futures
 from datetime import datetime,timezone
 import psycopg
 from psycopg.types.json import Jsonb
-DB=os.getenv("DATABASE_URL")
+DB=os.getenv("GIW_DATABASE_URL") or os.getenv("DATABASE_URL")
 if not DB:raise SystemExit("DATABASE_URL required")
 H={"User-Agent":"GlobalIntelligenceWatch/1.0 (source monitoring)"}
 FEEDS=[
