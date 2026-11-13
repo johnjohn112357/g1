@@ -13,7 +13,7 @@ FEEDS=[
 ("DW","https://rss.dw.com/rdf/rss-en-world","media"),
 ("France 24","https://www.france24.com/en/rss","media"),
 ("Al Jazeera","https://www.aljazeera.com/xml/rss/all.xml","media"),
-("UN News","https://news.un.org/feed/subscribe/en/news/all/rss.xml","multilateral"),
+("UN News","https://news.un.org/feed/subscribe/en/news/all/rss.xml","multilateral"),\n("UN Press / Security Council","https://press.un.org/en/rss.xml","multilateral"),\n("ECDC","https://www.ecdc.europa.eu/en/taxonomy/term/1307/feed","health"),
 ("NATO","https://www.nato.int/cps/en/natohq/news_rss.htm","official"),
 ("EU Council","https://www.consilium.europa.eu/en/rss/pressreleases.ashx/","official"),
 ("UK Government","https://www.gov.uk/search/news-and-communications.atom","official"),
