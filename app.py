@@ -171,10 +171,15 @@ def analysis_evidence():
 def analysis_brief():
  c=db()
  if not c:return jsonify(error="PostgreSQL unavailable; brief requires archive."),503
- with c,c.cursor() as cur:
-  cur.execute("SELECT id,url,title,source,domain,category,seendate,first_seen,last_seen FROM events ORDER BY last_seen DESC LIMIT 1500")
-  rows=cur.fetchall()
- return jsonify(build_brief(rows))
+ try:
+  with c,c.cursor() as cur:
+   cur.execute("SELECT id,url,title,source,domain,category,seendate,first_seen,last_seen FROM events ORDER BY last_seen DESC LIMIT 1500")
+   rows=cur.fetchall()
+  return jsonify(build_brief(rows))
+ except Exception:
+  app.logger.exception("Analysis brief failed")
+  return jsonify(error="Brief generation failed while reading or analysing the archive. Check Render logs for 'Analysis brief failed'."),500
+
 @app.get("/api/analysis/clusters")
 def analysis_clusters():
  c=db()
