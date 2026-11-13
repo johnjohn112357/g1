@@ -1,5 +1,5 @@
 """GIW periodic collector. Requires DATABASE_URL; snapshots source records and revisions."""
-import os,requests,xml.etree.ElementTree as ET,hashlib
+import os,requests,xml.etree.ElementTree as ET,hashlib,concurrent.futures
 from datetime import datetime,timezone
 import psycopg
 from psycopg.types.json import Jsonb
@@ -50,9 +50,14 @@ try:
  d=requests.get("https://api.gdeltproject.org/api/v2/doc/doc",params={"query":q,"mode":"ArtList","format":"json","maxrecords":250,"timespan":"24h","sort":"HybridRel"},headers=H,timeout=40).json()
  records += [{**a,"source":"GDELT","category":"news","kind":"gdelt"} for a in d.get("articles",[])]
 except Exception as e:errors.append("GDELT "+str(e)[:150])
-for name,url,cat in FEEDS:
- try:records+=entries(url,name,cat)
- except Exception as e:errors.append(name+" "+str(e)[:120])
+def getfeed(spec):
+ name,url,cat=spec
+ try:return entries(url,name,cat),None
+ except Exception as e:return [],name+" "+str(e)[:120]
+with concurrent.futures.ThreadPoolExecutor(max_workers=8) as ex:
+ for rec,err in ex.map(getfeed,FEEDS):
+  records+=rec
+  if err:errors.append(err)
 try:
  z=requests.get("https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojson",headers=H,timeout=20).json()
  for x in z.get("features",[]):
