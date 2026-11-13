@@ -20,7 +20,7 @@ https://global-intelligence-watch.onrender.com
 Media: BBC World/Europe, Guardian World, Deutsche Welle, France 24, Al Jazeera, Euronews, NPR World, Sky News, Radio Free Europe/Radio Liberty, Kyiv Independent.
 Official/multilateral: UN News, NATO, Council of the EU, European External Action Service, European Commission, European Parliament, UK Government.
 Specialist / investigative: UK NCSC, US CISA, Defense News, Bellingcat.
-Humanitarian/health/disaster: WHO, ReliefWeb, GDACS, USGS earthquake GeoJSON.
+Humanitarian/health/disaster: WHO, GDACS, USGS earthquake GeoJSON; ReliefWeb is linked manually (API requires approved appname).
 Aggregator: GDELT DOC 2.0 (not itself a primary source).
 
 Feeds are opportunistic, not guaranteed. The catalogue is a maintained starting set—not all internet sources. Sources may move/retire endpoints, block automated requests, publish only selected content, or be delayed. Feed health is displayed.
