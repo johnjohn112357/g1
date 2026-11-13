@@ -13,7 +13,7 @@ https://global-intelligence-watch.onrender.com
 - USGS real-time GeoJSON earthquake feed and event links.
 - Flask JSON endpoints: `/api/health`, `/api/search`, `/api/feeds`, `/api/sources`, `/api/hazards/earthquakes`, `/api/events`, `/api/history/<id>`.
 - PostgreSQL schema for event deduplication, first/last seen and event revision snapshots.
-- Collector script (`python collector.py`) for periodic ingestion when a scheduler and database connection are configured.
+- Collector script (`python collector.py`) and a no-cost background polling thread: snapshots sources about every 15 minutes while the Render web instance is awake.
 - Render Blueprint links the existing PostgreSQL connection string into the web service.
 
 ## Included source catalogue
@@ -29,7 +29,7 @@ Feeds are opportunistic, not guaranteed. The catalogue is a maintained starting 
 - Web service is Render Free in Frankfurt; it can sleep when idle and cold-start on next request.
 - Existing Render PostgreSQL is Free and has a stated expiry of **13 December 2026**; export/upgrade before that if you need durable retention.
 - Database connection is provisioned by the Render Blueprint. Confirm service environment contains DATABASE_URL and `/api/health` reports database=true.
-- Collector is intentionally **not running on a paid schedule**. Running it continuously needs a scheduler (Render Cron is paid) and/or a user-configured CI schedule with DATABASE_URL secret. Run manually: `python collector.py`.
+- A no-cost in-process collector runs about every 15 minutes while the web instance is awake. Render Free suspends the web instance after inactivity, so collection pauses while it sleeps and resumes after traffic. This is best-effort, not an always-on SLA. A continuously running collector requires paid always-on infrastructure or an external scheduler.
 - Do not activate paid resources without explicit cost approval.
 
 ## Setup locally
