@@ -10,6 +10,7 @@ HTTP=requests.Session()
 HTTP.headers.update({"User-Agent":"GlobalIntelligenceWatch/1.0 (public-source research dashboard)"})
 CACHE={}
 CACHE_TTL=300
+GDELT_CACHE={}
 FEEDS=[
  {"id":"bbc-world","name":"BBC World","url":"https://feeds.bbci.co.uk/news/world/rss.xml","type":"media","region":"Global"},
  {"id":"bbc-europe","name":"BBC Europe","url":"https://feeds.bbci.co.uk/news/world/europe/rss.xml","type":"media","region":"Europe"},
@@ -96,8 +97,14 @@ def search():
  days=max(1,min(30,int(request.args.get("days","7"))))
  limit=max(10,min(250,int(request.args.get("limit","100"))))
  try:
-  r=HTTP.get("https://api.gdeltproject.org/api/v2/doc/doc",params={"query":q,"mode":"ArtList","format":"json","maxrecords":limit,"timespan":f"{days}d","sort":"HybridRel"},timeout=30);r.raise_for_status();data=r.json()
+  cachekey=(q,days,limit);cached=GDELT_CACHE.get(cachekey)
+  if cached and time.time()-cached[0]<300:data=cached[1]
+  else:
+   r=HTTP.get("https://api.gdeltproject.org/api/v2/doc/doc",params={"query":q,"mode":"ArtList","format":"json","maxrecords":limit,"timespan":f"{days}d","sort":"HybridRel"},timeout=30);r.raise_for_status();data=r.json()
+   if not isinstance(data,dict):raise ValueError("GDELT returned non-JSON object")
+   GDELT_CACHE[cachekey]=(time.time(),data)
   gd=[{**a,"source":"gdelt","category":"news","kind":"gdelt"} for a in data.get("articles",[])]
+  if not gd and not data.get("articles"):gd_error="GDELT returned zero results or an empty response"
  except Exception as e:gd=[];gd_error=str(e)[:180]
  try:
   with concurrent.futures.ThreadPoolExecutor(max_workers=8) as ex:rs=list(ex.map(parse_feed,FEEDS))
