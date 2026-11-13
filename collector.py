@@ -18,7 +18,20 @@ FEEDS=[
 ("EU Council","https://www.consilium.europa.eu/en/press/press-releases/rss/","official"),
 ("UK Government","https://www.gov.uk/government/announcements.atom","official"),
 ("UK NCSC","https://www.ncsc.gov.uk/api/1/services/v1/report-rss-feed.xml","cyber"),
-("US CISA","https://www.cisa.gov/news.xml","cyber")]
+("US CISA","https://www.cisa.gov/news.xml","cyber"),
+("EU EEAS","https://www.eeas.europa.eu/rss_en.xml","official"),
+("European Commission","https://ec.europa.eu/commission/presscorner/api/rss?language=en","official"),
+("European Parliament","https://www.europarl.europa.eu/rss/doc/top-stories/en.xml","official"),
+("WHO","https://www.who.int/rss-feeds/news-english.xml","health"),
+("ReliefWeb","https://reliefweb.int/updates/rss.xml","humanitarian"),
+("RFE/RL","https://www.rferl.org/api/z-pqpiev-qpp","media"),
+("Euronews","https://www.euronews.com/rss?level=theme&name=news","media"),
+("NPR World","https://feeds.npr.org/1004/rss.xml","media"),
+("Sky News","https://feeds.skynews.com/feeds/rss/world.xml","media"),
+("Kyiv Independent","https://kyivindependent.com/feed/","media"),
+("Defense News","https://www.defensenews.com/arc/outboundfeeds/rss/","specialist"),
+("Bellingcat","https://www.bellingcat.com/feed/","investigative"),
+("GDACS","https://www.gdacs.org/xml/rss.xml","hazard"),]
 def entries(url,name,cat):
  out=[];root=ET.fromstring(requests.get(url,headers=H,timeout=15).content)
  items=root.findall(".//item") or root.findall(".//{*}entry")
