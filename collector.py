@@ -14,21 +14,24 @@ FEEDS=[
 ("France 24","https://www.france24.com/en/rss","media"),
 ("Al Jazeera","https://www.aljazeera.com/xml/rss/all.xml","media"),
 ("UN News","https://news.un.org/feed/subscribe/en/news/all/rss.xml","multilateral"),
-("NATO","https://www.nato.int/cps/en/natohq/news.htm?query=&search=1&display_mode=rss","official"),
-("EU Council","https://www.consilium.europa.eu/en/press/press-releases/rss/","official"),
-("UK Government","https://www.gov.uk/government/announcements.atom","official"),
+("NATO","https://www.nato.int/cps/en/natohq/news_rss.htm","official"),
+("EU Council","https://www.consilium.europa.eu/en/rss/pressreleases.ashx/","official"),
+("UK Government","https://www.gov.uk/search/news-and-communications.atom","official"),
 ("UK NCSC","https://www.ncsc.gov.uk/api/1/services/v1/report-rss-feed.xml","cyber"),
 ("US CISA","https://www.cisa.gov/news.xml","cyber"),
-("EU EEAS","https://www.eeas.europa.eu/rss_en.xml","official"),
+
 ("European Commission","https://ec.europa.eu/commission/presscorner/api/rss?language=en","official"),
-("European Parliament","https://www.europarl.europa.eu/rss/doc/top-stories/en.xml","official"),
+
 ("WHO","https://www.who.int/rss-feeds/news-english.xml","health"),
+("IAEA Top News","https://www.iaea.org/feeds/topnews","official"),
+("US State Department","https://www.state.gov/rss-feed/press-releases/feed/","official"),
+("US Department of Defense","https://www.defense.gov/News/RSS/","official"),
 
 ("RFE/RL","https://www.rferl.org/api/z-pqpiev-qpp","media"),
 ("Euronews","https://www.euronews.com/rss?level=theme&name=news","media"),
 ("NPR World","https://feeds.npr.org/1004/rss.xml","media"),
 ("Sky News","https://feeds.skynews.com/feeds/rss/world.xml","media"),
-("Kyiv Independent","https://kyivindependent.com/feed/","media"),
+
 ("Defense News","https://www.defensenews.com/arc/outboundfeeds/rss/","specialist"),
 ("Bellingcat","https://www.bellingcat.com/feed/","investigative"),
 ("GDACS","https://www.gdacs.org/xml/rss.xml","hazard"),]
