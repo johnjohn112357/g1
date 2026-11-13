@@ -1,12 +1,63 @@
-# Global Intelligence Watch
+# Global Intelligence Watch (GIW)
 
-Open-source intelligence dashboard and collection backend.
+Public-source intelligence discovery desk. **A lead collector, not an automated truth/attribution engine or emergency-alert system.**
 
-## Current capabilities
-- Public news discovery via GDELT
-- PostgreSQL event archive and revision history
-- API-backed web dashboard
-- Scheduled collector
+## Live dashboard
+https://global-intelligence-watch.onrender.com
 
-## Evidence discipline
-News discovery is not verification. Every item is a lead; attribution and confidence require separate corroboration.
+## Current functionality
+- Combined on-demand GDELT DOC 2.0 news search and public RSS/Atom source ingestion.
+- Curated source-health registry with last-check status and per-feed errors.
+- Keyword-filtered cross-source search, source labels, article timestamps, source links.
+- Leaflet world map: explicitly approximate title-keyword regions for news (not incident geolocation) and exact reported coordinates for USGS earthquake features.
+- USGS real-time GeoJSON earthquake feed and event links.
+- Flask JSON endpoints: `/api/health`, `/api/search`, `/api/feeds`, `/api/sources`, `/api/hazards/earthquakes`, `/api/events`, `/api/history/<id>`.
+- PostgreSQL schema for event deduplication, first/last seen and event revision snapshots.
+- Collector script (`python collector.py`) for periodic ingestion when a scheduler and database connection are configured.
+- Render Blueprint links the existing PostgreSQL connection string into the web service.
+
+## Included source catalogue
+Media: BBC World/Europe, Guardian World, Deutsche Welle, France 24, Al Jazeera, Euronews, NPR World, Sky News, Radio Free Europe/Radio Liberty, Kyiv Independent.
+Official/multilateral: UN News, NATO, Council of the EU, European External Action Service, European Commission, European Parliament, UK Government.
+Specialist / investigative: UK NCSC, US CISA, Defense News, Bellingcat.
+Humanitarian/health/disaster: WHO, ReliefWeb, GDACS, USGS earthquake GeoJSON.
+Aggregator: GDELT DOC 2.0 (not itself a primary source).
+
+Feeds are opportunistic, not guaranteed. The catalogue is a maintained starting set—not all internet sources. Sources may move/retire endpoints, block automated requests, publish only selected content, or be delayed. Feed health is displayed.
+
+## Deployment and collection
+- Web service is Render Free in Frankfurt; it can sleep when idle and cold-start on next request.
+- Existing Render PostgreSQL is Free and has a stated expiry of **13 December 2026**; export/upgrade before that if you need durable retention.
+- Database connection is provisioned by the Render Blueprint. Confirm service environment contains DATABASE_URL and `/api/health` reports database=true.
+- Collector is intentionally **not running on a paid schedule**. Running it continuously needs a scheduler (Render Cron is paid) and/or a user-configured CI schedule with DATABASE_URL secret. Run manually: `python collector.py`.
+- Do not activate paid resources without explicit cost approval.
+
+## Setup locally
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+export DATABASE_URL='postgresql://...'
+python app.py
+# In a second terminal:
+python collector.py
+```
+
+## Analytic integrity / limitations
+- A headline/article is not proof that an event happened.
+- Official statements can be authoritative about what an institution said, but not automatically independent verification of its claims.
+- Distinguish occurrence, attribution, intent, coordination, impact and forecast.
+- Syndication/duplicate articles are not independent corroboration.
+- News map regions are inferred from title keywords and may be false positives; never use as precise coordinates.
+- No universal crawl: APIs, RSS/Atom, public accessibility, licensing, language coverage, robots/terms, paywalls, rate limits and provider outages constrain coverage. Do not scrape restricted services or bypass access controls.
+- No automatic confidence scoring or AI-generated conclusions are presented as established facts. Human source checking remains required.
+- Not classified intelligence, professional security advice, or a substitute for official emergency instructions.
+
+## Source references / documentation
+- [GDELT data and API overview](https://www.gdeltproject.org/data.html) — global news/event discovery and dataset descriptions.
+- [ReliefWeb API documentation](https://apidoc.reliefweb.int/) — humanitarian reporting/disaster data; API use requires approved appname.
+- [USGS GeoJSON feeds](https://earthquake.usgs.gov/earthquakes/feed/v1.0/geojson.php) — machine-readable earthquake data and feed update cadence.
+- [UK NCSC advisories](https://www.ncsc.gov.uk/section/keep-up-to-date/reports-advisories)
+- [CISA](https://www.cisa.gov/news.xml)
+- [EU Council RSS](https://www.consilium.europa.eu/en/about-site/rss/)
+- [UK Emergency Alerts](https://www.gov.uk/alerts) — actual life-threatening public warnings; GIW is not a replacement.
