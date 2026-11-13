@@ -81,7 +81,8 @@ def sources():
  for s in FEEDS:
   c=CACHE.get(s["id"])
   statuses.append({**s,"last_checked":datetime.fromtimestamp(c[0],timezone.utc).isoformat() if c else None,"status":c[1]["status"] if c else "not_checked","items":len(c[1]["articles"]) if c else None,"error":c[1].get("error") if c else None})
- statuses.insert(0,{"id":"reliefweb","name":"ReliefWeb","url":"https://reliefweb.int/updates","type":"humanitarian","region":"Global","status":"manual_link","description":"Humanitarian source; API ingestion requires approved appname."})\n statuses.insert(1,{"id":"gdelt","name":"GDELT DOC 2.0","url":"https://api.gdeltproject.org/api/v2/doc/doc","type":"aggregator","region":"Global","status":"on_demand","description":"Global multilingual news index; not a primary source"})
+ statuses.insert(0,{"id":"reliefweb","name":"ReliefWeb","url":"https://reliefweb.int/updates","type":"humanitarian","region":"Global","status":"manual_link","description":"Humanitarian source; API ingestion requires approved appname."})
+ statuses.insert(1,{"id":"gdelt","name":"GDELT DOC 2.0","url":"https://api.gdeltproject.org/api/v2/doc/doc","type":"aggregator","region":"Global","status":"on_demand","description":"Global multilingual news index; not a primary source"})
  statuses.insert(2,{"id":"usgs-live","name":"USGS earthquake GeoJSON","url":"https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojson","type":"hazard","region":"Global","status":"on_demand"})
  return jsonify(sources=statuses,source_count=len(statuses),note="Source availability is tested on fetch; this is a curated starter catalogue, not every online source.")
 @app.get("/api/feeds")
