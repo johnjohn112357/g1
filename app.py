@@ -147,7 +147,10 @@ def analysis_ai():
   rows=cur.fetchall()
  if not rows:return jsonify(error="No archived reports available"),404
  evidence=[{"title":x.get("title"),"source":x.get("source") or x.get("domain"),"url":x.get("url"),"date":x.get("seendate") or x.get("last_seen")} for x in rows]
- prompt=("You are an OSINT analyst. Analyze ONLY the provided collected headlines/metadata, not external facts. Separate: OBSERVED REPORTING (what headlines say), ASSESSMENT (tentative synthesis), ALTERNATIVE EXPLANATIONS, INFORMATION GAPS, INDICATORS TO WATCH, and CONFIDENCE (low/medium/high with reason). Never assert a headline is true; don't infer casualties, intent, capability, or causation absent evidence. Identify duplicates/syndication and source limitations. Cite every observed item inline using its exact source label and URL from the input. Do not invent citations. State explicitly this is a headline-only preliminary assessment.\n\nDATA:\n"+json.dumps(evidence,ensure_ascii=False)
+ prompt="""You are an OSINT analyst. Analyze ONLY the provided collected headlines/metadata, not external facts. Separate: OBSERVED REPORTING (what headlines say), ASSESSMENT (tentative synthesis), ALTERNATIVE EXPLANATIONS, INFORMATION GAPS, INDICATORS TO WATCH, and CONFIDENCE (low/medium/high with reason). Never assert a headline is true; don't infer casualties, intent, capability, or causation absent evidence. Identify duplicates/syndication and source limitations. Cite every observed item inline using its exact source label and URL from the input. Do not invent citations. State explicitly this is a headline-only preliminary assessment.
+
+DATA:
+""" + json.dumps(evidence,ensure_ascii=False)
  try:
   rr=HTTP.post("https://api.openai.com/v1/responses",headers={"Authorization":"Bearer "+key,"Content-Type":"application/json"},json={"model":os.getenv("GIW_AI_MODEL","gpt-6-luna"),"input":prompt,"max_output_tokens":1800},timeout=90);rr.raise_for_status();d=rr.json()
   textout="\n".join(z.get("text","") for item in d.get("output",[]) for z in item.get("content",[]) if z.get("type")=="output_text")
