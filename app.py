@@ -134,6 +134,35 @@ def cyber_kev():
   vulns=d.get("vulnerabilities",[])
   return jsonify(source="CISA Known Exploited Vulnerabilities Catalog",catalog_version=d.get("catalogVersion"),date_released=d.get("dateReleased"),count=len(vulns),vulnerabilities=vulns[:250],note="CISA catalog inclusion means known exploitation; it does not establish exploitation against your systems.")
  except Exception as e:return jsonify(error=str(e)[:180]),502
+@app.get("/api/analysis/brief")
+def analysis_brief():
+ c=db()
+ if not c:return jsonify(error="PostgreSQL unavailable; brief requires archive."),503
+ with c,cursor() as cur:
+  cur.execute("SELECT id,url,title,source,domain,category,seendate,first_seen,last_seen FROM events ORDER BY last_seen DESC LIMIT 1500")
+  rows=cur.fetchall()
+ return jsonify(build_brief(rows))
+@app.get("/api/analysis/clusters")
+def analysis_clusters():
+ c=db()
+ if not c:return jsonify(clusters=[],note="PostgreSQL unavailable"),503
+ with c,cursor() as cur:
+  cur.execute("SELECT id,url,title,source,domain,category,seendate,last_seen FROM events ORDER BY last_seen DESC LIMIT 1500")
+  rows=cur.fetchall()
+ return jsonify(clusters=cluster_events(rows),method="Title similarity only; review before treating as one incident.")
+@app.get("/api/analysis/triage")
+def analysis_triage():
+ c=db()
+ if not c:return jsonify(events=[],note="PostgreSQL unavailable"),503
+ level=request.args.get("level","high").lower()
+ with c,cursor() as cur:
+  cur.execute("SELECT id,url,title,source,domain,category,seendate,last_seen FROM events ORDER BY last_seen DESC LIMIT 1500")
+  rows=cur.fetchall()
+ out=[]
+ for e in rows:
+  x=classify(e.get("title"))
+  if x["heuristic_level"] in (["critical","high"] if level=="high" else ["critical"]):out.append({**e,**x,"themes":theme(e.get("title"))})
+ return jsonify(events=out[:150],method="Keyword triage; not verification or forecasting.")
 @app.get("/api/events")
 def events():
  c=db()
