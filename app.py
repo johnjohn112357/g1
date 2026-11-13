@@ -2,7 +2,8 @@ import os, json, time, hashlib, concurrent.futures, xml.etree.ElementTree as ET,
 from datetime import datetime, timezone
 import psycopg, requests, feedparser
 from flask import Flask, jsonify, request, send_from_directory
-from psycopg.rows import dict_row\nfrom intelligence import build_brief, cluster_events, classify, theme
+from psycopg.rows import dict_row
+from intelligence import build_brief, cluster_events, classify, theme
 
 app=Flask(__name__,static_folder="static")
 DATABASE_URL=os.getenv("DATABASE_URL")
