@@ -27,17 +27,24 @@ def theme(title):
     t=(title or "").lower()
     return [name for name,terms in THEMES.items() if any(x in t for x in terms)] or ["General"]
 def cluster_events(events):
-    """Conservative near-duplicate clusters by normalized title tokens; not event identity."""
-    groups={}
+    """Conservative title-token similarity clusters; never asserts event identity."""
+    stop={"the","and","for","with","from","that","this","after","over","into","says","said","report","reported","reports","according","update","updates","breaking"}
+    groups=[]
     for e in events:
         title=e.get("title") or ""
-        words=set(re.findall(r"[a-z0-9]{3,}",title.lower()))
-        words-={"the","and","for","with","from","that","this","after","over","into","says","said","report"}
-        if not words: continue
-        key=tuple(sorted(words)[:8])
-        groups.setdefault(key,[]).append(e)
+        words=set(re.findall(r"[a-z0-9]{3,}",title.lower()))-stop
+        if not words:continue
+        match=None
+        for g in groups:
+            overlap=len(words & g["tokens"])/max(1,min(len(words),len(g["tokens"])))
+            if overlap>=0.70:
+                match=g;break
+        if match:
+            match["items"].append(e);match["tokens"]|=words
+        else:groups.append({"tokens":words,"items":[e]})
     out=[]
-    for key,items in groups.items():
+    for g in groups:
+        items=g["items"]
         if len(items)<2:continue
         out.append({"label":items[0].get("title","Related reports"),"reports":len(items),"sources":sorted({str(x.get("source") or x.get("domain") or "unknown") for x in items}),"items":items[:8],"note":"Title-token similarity only; review before treating as one incident."})
     return sorted(out,key=lambda x:(x["reports"],len(x["sources"])),reverse=True)[:40]
